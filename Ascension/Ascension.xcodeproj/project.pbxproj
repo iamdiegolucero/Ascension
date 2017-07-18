@@ -15,6 +15,7 @@
 		EC42993E1F1E957000D9550E /* Main.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = EC42993C1F1E957000D9550E /* Main.storyboard */; };
 		EC4299401F1E957000D9550E /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = EC42993F1F1E957000D9550E /* Assets.xcassets */; };
 		EC4299431F1E957000D9550E /* LaunchScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = EC4299411F1E957000D9550E /* LaunchScreen.storyboard */; };
+		EC42994B1F1E9D2900D9550E /* Platform.sks in Resources */ = {isa = PBXBuildFile; fileRef = EC42994A1F1E9D2900D9550E /* Platform.sks */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -28,6 +29,7 @@
 		EC42993F1F1E957000D9550E /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 		EC4299421F1E957000D9550E /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; name = Base; path = Base.lproj/LaunchScreen.storyboard; sourceTree = "<group>"; };
 		EC4299441F1E957000D9550E /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
+		EC42994A1F1E9D2900D9550E /* Platform.sks */ = {isa = PBXFileReference; lastKnownFileType = file.sks; path = Platform.sks; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -61,6 +63,7 @@
 			isa = PBXGroup;
 			children = (
 				EC4299321F1E957000D9550E /* AppDelegate.swift */,
+				EC42994A1F1E9D2900D9550E /* Platform.sks */,
 				EC4299341F1E957000D9550E /* GameScene.sks */,
 				EC4299361F1E957000D9550E /* Actions.sks */,
 				EC4299381F1E957000D9550E /* GameScene.swift */,
@@ -137,6 +140,7 @@
 				EC4299351F1E957000D9550E /* GameScene.sks in Resources */,
 				EC4299401F1E957000D9550E /* Assets.xcassets in Resources */,
 				EC4299431F1E957000D9550E /* LaunchScreen.storyboard in Resources */,
+				EC42994B1F1E9D2900D9550E /* Platform.sks in Resources */,
 				EC4299371F1E957000D9550E /* Actions.sks in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -316,6 +320,7 @@
 				EC4299491F1E957000D9550E /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
 		};
 /* End XCConfigurationList section */
 	};
