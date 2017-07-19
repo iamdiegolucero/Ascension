@@ -64,7 +64,6 @@ class GameScene: SKScene {
     }
     
     override func update(_ currentTime: TimeInterval) {
-        move()
         
         /* Grab current velocity */
         let velocityY = hero.physicsBody?.velocity.dy ?? 0
@@ -74,10 +73,13 @@ class GameScene: SKScene {
         if velocityY > 500 {
             hero.physicsBody?.velocity.dy = 500
         }
-
-    }
-
-    func move() {
-        hero.position.x += moveX
+        
+        if hero.position.x < -150 {
+            hero.position.x = 150
+        }
+        
+        if hero.position.x > 150 {
+            hero.position.x = -150
+        }
     }
 }
