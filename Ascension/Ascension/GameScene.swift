@@ -26,6 +26,8 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
     var pGo = false
     var gameState: GameSceneState = .active
     var moveDirection: CGFloat = 3.5
+    /* UI Connections */
+    var buttonRestart: MSButtonNode!
     
     override func didMove(to view: SKView) {
         /* Set physics contact delegate */
@@ -39,8 +41,29 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
         /* Set reference to obstacle layer node */
         platformLayer = self.childNode(withName: "platformLayer")
         startPlatform = self.childNode(withName: "startPlatform")
+        /* Set UI connections */
+        buttonRestart = self.childNode(withName: "buttonRestart") as! MSButtonNode
         
+        /* Setup restart button selection handler */
+        buttonRestart.selectedHandler = {
+            
+            /* Grab reference to our SpriteKit view */
+            let skView = self.view as SKView!
+            
+            /* Load Game scene */
+            let scene = GameScene(fileNamed:"GameScene") as GameScene!
+            
+            /* Ensure correct aspect mode */
+            scene?.scaleMode = .aspectFill
+            
+            /* Restart game scene */
+            skView?.presentScene(scene)
+            
+            /* Hide restart button */
+            
+        }
         
+        self.buttonRestart.state = .MSButtonNodeStateHidden
         let swipeRight:UISwipeGestureRecognizer = UISwipeGestureRecognizer(target: self, action: #selector(swipedRight))
         swipeRight.direction = .right
         view.addGestureRecognizer(swipeRight)
@@ -80,7 +103,9 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
     
     func swipedUp(sender:UISwipeGestureRecognizer){
         print("swiped up")
-        hero.physicsBody?.applyImpulse(CGVector(dx: 0, dy: 25))
+        if gameState != .gameOver{
+            hero.physicsBody?.applyImpulse(CGVector(dx: 0, dy: 25))
+        }
     }
     
     func swipedDown(sender:UISwipeGestureRecognizer){
@@ -175,6 +200,7 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
         /* Check if either physics bodies was a seal */
         if contactA.categoryBitMask == 1 || contactB.categoryBitMask == 1 {
             gameState = .gameOver
+            buttonRestart.state = .MSButtonNodeStateActive
         }
     }
 }
