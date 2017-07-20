@@ -14,9 +14,11 @@ class GameScene: SKScene {
     var hero: SKSpriteNode!
     var platformSource: SKNode!
     var platformLayer: SKNode!
+    var startPlatform: SKNode!
     let scrollSpeed: CGFloat = 80
     var spawnTimer: CFTimeInterval = 0
     let fixedDelta: CFTimeInterval = 1.0 / 60.0 /* 60 FPS */
+    var go = false
     
     override func didMove(to view: SKView) {
         /* Setup your scene here */
@@ -26,7 +28,7 @@ class GameScene: SKScene {
         platformSource = self.childNode(withName: "platform")
         /* Set reference to obstacle layer node */
         platformLayer = self.childNode(withName: "platformLayer")
-
+        startPlatform = self.childNode(withName: "startPlatform")
         
         
         let swipeRight:UISwipeGestureRecognizer = UISwipeGestureRecognizer(target: self, action: #selector(swipedRight))
@@ -130,6 +132,16 @@ class GameScene: SKScene {
             
             // Reset spawn timer
             spawnTimer = 0
+        }
+        if spawnTimer >= 1 {
+            go = true
+        }
+        if go == true {
+            startPlatform.position.y -= scrollSpeed * CGFloat(fixedDelta)
+        }
+            
+        if startPlatform.position.y < -240 {
+            startPlatform.removeFromParent()
         }
     }
 }
