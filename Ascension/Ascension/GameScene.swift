@@ -12,14 +12,22 @@ import GameplayKit
 class GameScene: SKScene {
     
     var hero: SKSpriteNode!
-    var moveX: CGFloat = 2
+    var platformSource: SKNode!
+    var platformLayer: SKNode!
+    let scrollSpeed: CGFloat = 80
+    var spawnTimer: CFTimeInterval = 0
+    let fixedDelta: CFTimeInterval = 1.0 / 60.0 /* 60 FPS */
     
     override func didMove(to view: SKView) {
         /* Setup your scene here */
         
-
         hero = self.childNode(withName: "hero") as! SKSpriteNode
-        moveX = 0
+        /* Set reference to obstacle Source node */
+        platformSource = self.childNode(withName: "platform")
+        /* Set reference to obstacle layer node */
+        platformLayer = self.childNode(withName: "platformLayer")
+
+        
         
         let swipeRight:UISwipeGestureRecognizer = UISwipeGestureRecognizer(target: self, action: #selector(swipedRight))
         swipeRight.direction = .right
@@ -80,6 +88,48 @@ class GameScene: SKScene {
         
         if hero.position.x > 150 {
             hero.position.x = -150
+        }
+        
+        /* Process obstacles */
+        updateObstacles()
+        spawnTimer+=fixedDelta
+    }
+    
+    func updateObstacles() {
+        /* Update Obstacles */
+        
+        platformLayer.position.y -= scrollSpeed * CGFloat(fixedDelta)
+        
+        /* Loop through obstacle layer nodes */
+        for platform in platformLayer.children as! [SKReferenceNode] {
+            
+            /* Get obstacle node position, convert node position to scene space */
+            let platformPosition = platformLayer.convert(platform.position, to: self)
+            
+            /* Check if obstacle has left the scene */
+            if platformPosition.y <= -240 {
+                
+                /* Remove obstacle node from obstacle layer */
+                platform.removeFromParent()
+            }
+            
+        }
+        
+        /* Time to add a new obstacle? */
+        if spawnTimer >= 2 {
+            
+            /* Create a new obstacle by copying the source obstacle */
+            let newPlatform = platformSource.copy() as! SKNode
+            platformLayer.addChild(newPlatform)
+            
+            /* Generate new obstacle position, start just outside screen and with a random y value */
+            let randomPosition = CGPoint(x: CGFloat.random(min: -95, max: 95), y: 294)
+            
+            /* Convert new node position back to obstacle layer space */
+            newPlatform.position = self.convert(randomPosition, to: platformLayer)
+            
+            // Reset spawn timer
+            spawnTimer = 0
         }
     }
 }

@@ -16,6 +16,7 @@
 		EC4299401F1E957000D9550E /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = EC42993F1F1E957000D9550E /* Assets.xcassets */; };
 		EC4299431F1E957000D9550E /* LaunchScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = EC4299411F1E957000D9550E /* LaunchScreen.storyboard */; };
 		EC42994B1F1E9D2900D9550E /* Platform.sks in Resources */ = {isa = PBXBuildFile; fileRef = EC42994A1F1E9D2900D9550E /* Platform.sks */; };
+		EC4FC1FB1F20FE6E00D71038 /* CGFloat+Extensions.swift in Sources */ = {isa = PBXBuildFile; fileRef = EC4FC1FA1F20FE6E00D71038 /* CGFloat+Extensions.swift */; };
 		EC7940451F1EAFC400595845 /* Hero.swift in Sources */ = {isa = PBXBuildFile; fileRef = EC7940441F1EAFC400595845 /* Hero.swift */; };
 /* End PBXBuildFile section */
 
@@ -31,6 +32,7 @@
 		EC4299421F1E957000D9550E /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; name = Base; path = Base.lproj/LaunchScreen.storyboard; sourceTree = "<group>"; };
 		EC4299441F1E957000D9550E /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		EC42994A1F1E9D2900D9550E /* Platform.sks */ = {isa = PBXFileReference; lastKnownFileType = file.sks; path = Platform.sks; sourceTree = "<group>"; };
+		EC4FC1FA1F20FE6E00D71038 /* CGFloat+Extensions.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = "CGFloat+Extensions.swift"; sourceTree = "<group>"; };
 		EC7940441F1EAFC400595845 /* Hero.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Hero.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
@@ -71,6 +73,7 @@
 				EC4299381F1E957000D9550E /* GameScene.swift */,
 				EC7940441F1EAFC400595845 /* Hero.swift */,
 				EC42993A1F1E957000D9550E /* GameViewController.swift */,
+				EC4FC1FA1F20FE6E00D71038 /* CGFloat+Extensions.swift */,
 				EC42993C1F1E957000D9550E /* Main.storyboard */,
 				EC42993F1F1E957000D9550E /* Assets.xcassets */,
 				EC4299411F1E957000D9550E /* LaunchScreen.storyboard */,
@@ -156,6 +159,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				EC4299391F1E957000D9550E /* GameScene.swift in Sources */,
+				EC4FC1FB1F20FE6E00D71038 /* CGFloat+Extensions.swift in Sources */,
 				EC42993B1F1E957000D9550E /* GameViewController.swift in Sources */,
 				EC4299331F1E957000D9550E /* AppDelegate.swift in Sources */,
 				EC7940451F1EAFC400595845 /* Hero.swift in Sources */,
