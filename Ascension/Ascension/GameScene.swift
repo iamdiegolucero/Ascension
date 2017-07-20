@@ -19,6 +19,8 @@ class GameScene: SKScene {
     var spawnTimer: CFTimeInterval = 0
     let fixedDelta: CFTimeInterval = 1.0 / 60.0 /* 60 FPS */
     var go = false
+    var pGo = false
+    var moveDirection: CGFloat = 3.5
     
     override func didMove(to view: SKView) {
         /* Setup your scene here */
@@ -53,13 +55,17 @@ class GameScene: SKScene {
     
     func swipedRight(sender:UISwipeGestureRecognizer){
         print("swiped right")
-        hero.physicsBody?.velocity.dx = 200
+        pGo = true
+        //hero.physicsBody?.velocity.dx = 200
+        moveDirection = 3.5
         
     }
 
     func swipedLeft(sender:UISwipeGestureRecognizer){
         print("swiped left")
-        hero.physicsBody?.velocity.dx = -200
+        pGo = true
+        //hero.physicsBody?.velocity.dx = -200
+        moveDirection = -3.5
 
     
     }
@@ -75,6 +81,9 @@ class GameScene: SKScene {
     
     override func update(_ currentTime: TimeInterval) {
         
+        if pGo == true{
+            hero.position.x += moveDirection
+        }
         /* Grab current velocity */
         let velocityY = hero.physicsBody?.velocity.dy ?? 0
         
@@ -133,7 +142,7 @@ class GameScene: SKScene {
             // Reset spawn timer
             spawnTimer = 0
         }
-        if spawnTimer >= 1 {
+        if spawnTimer >= 0.9 {
             go = true
         }
         if go == true {
