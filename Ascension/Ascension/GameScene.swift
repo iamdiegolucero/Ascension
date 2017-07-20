@@ -9,7 +9,11 @@
 import SpriteKit
 import GameplayKit
 
-class GameScene: SKScene {
+enum GameSceneState {
+    case active, gameOver
+}
+
+class GameScene: SKScene, SKPhysicsContactDelegate {
     
     var hero: SKSpriteNode!
     var platformSource: SKNode!
@@ -20,9 +24,13 @@ class GameScene: SKScene {
     let fixedDelta: CFTimeInterval = 1.0 / 60.0 /* 60 FPS */
     var go = false
     var pGo = false
+    var gameState: GameSceneState = .active
     var moveDirection: CGFloat = 3.5
     
     override func didMove(to view: SKView) {
+        /* Set physics contact delegate */
+        physicsWorld.contactDelegate = self
+        
         /* Setup your scene here */
         
         hero = self.childNode(withName: "hero") as! SKSpriteNode
@@ -60,14 +68,14 @@ class GameScene: SKScene {
         moveDirection = 3.5
         
     }
-
+    
     func swipedLeft(sender:UISwipeGestureRecognizer){
         print("swiped left")
         pGo = true
         //hero.physicsBody?.velocity.dx = -200
         moveDirection = -3.5
-
-    
+        
+        
     }
     
     func swipedUp(sender:UISwipeGestureRecognizer){
@@ -80,10 +88,10 @@ class GameScene: SKScene {
     }
     
     override func update(_ currentTime: TimeInterval) {
-        
+        if gameState != .gameOver{ return }
         if pGo == true{
             hero.position.x += moveDirection
-        }
+            }
         /* Grab current velocity */
         let velocityY = hero.physicsBody?.velocity.dy ?? 0
         
@@ -107,50 +115,66 @@ class GameScene: SKScene {
     }
     
     func updateObstacles() {
-        /* Update Obstacles */
-        
-        platformLayer.position.y -= scrollSpeed * CGFloat(fixedDelta)
-        
-        /* Loop through obstacle layer nodes */
-        for platform in platformLayer.children as! [SKReferenceNode] {
+        if gameState != .gameOver {
+            /* Update Obstacles */
             
-            /* Get obstacle node position, convert node position to scene space */
-            let platformPosition = platformLayer.convert(platform.position, to: self)
+            platformLayer.position.y -= scrollSpeed * CGFloat(fixedDelta)
             
-            /* Check if obstacle has left the scene */
-            if platformPosition.y <= -240 {
+            /* Loop through obstacle layer nodes */
+            for platform in platformLayer.children as! [SKReferenceNode] {
                 
-                /* Remove obstacle node from obstacle layer */
-                platform.removeFromParent()
+                /* Get obstacle node position, convert node position to scene space */
+                let platformPosition = platformLayer.convert(platform.position, to: self)
+                
+                /* Check if obstacle has left the scene */
+                if platformPosition.y <= -240 {
+                    
+                    /* Remove obstacle node from obstacle layer */
+                    platform.removeFromParent()
+                }
+                
             }
             
+            /* Time to add a new obstacle? */
+            if spawnTimer >= 2.1 {
+                
+                /* Create a new obstacle by copying the source obstacle */
+                let newPlatform = platformSource.copy() as! SKNode
+                platformLayer.addChild(newPlatform)
+                
+                /* Generate new obstacle position, start just outside screen and with a random y value */
+                let randomPosition = CGPoint(x: CGFloat.random(min: -95, max: 95), y: 294)
+                
+                /* Convert new node position back to obstacle layer space */
+                newPlatform.position = self.convert(randomPosition, to: platformLayer)
+                
+                // Reset spawn timer
+                spawnTimer = 0
+            }
+            if spawnTimer >= 0.9 {
+                go = true
+            }
+            if go == true {
+                startPlatform.position.y -= scrollSpeed * CGFloat(fixedDelta)
+            }
+            
+            if startPlatform.position.y < -240 {
+                startPlatform.removeFromParent()
+            }
         }
-        
-        /* Time to add a new obstacle? */
-        if spawnTimer >= 2 {
-            
-            /* Create a new obstacle by copying the source obstacle */
-            let newPlatform = platformSource.copy() as! SKNode
-            platformLayer.addChild(newPlatform)
-            
-            /* Generate new obstacle position, start just outside screen and with a random y value */
-            let randomPosition = CGPoint(x: CGFloat.random(min: -95, max: 95), y: 294)
-            
-            /* Convert new node position back to obstacle layer space */
-            newPlatform.position = self.convert(randomPosition, to: platformLayer)
-            
-            // Reset spawn timer
-            spawnTimer = 0
-        }
-        if spawnTimer >= 0.9 {
-            go = true
-        }
-        if go == true {
-            startPlatform.position.y -= scrollSpeed * CGFloat(fixedDelta)
-        }
-            
-        if startPlatform.position.y < -240 {
-            startPlatform.removeFromParent()
+    }
+    
+    func didBegin(_ contact: SKPhysicsContact) {
+        /* Physics contact delegate implementation */
+        /* Get references to the bodies involved in the collision */
+        let contactA:SKPhysicsBody = contact.bodyA
+        let contactB:SKPhysicsBody = contact.bodyB
+        /* Get references to the physics body parent SKSpriteNode */
+        let nodeA = contactA.node as! SKSpriteNode
+        let nodeB = contactB.node as! SKSpriteNode
+        /* Check if either physics bodies was a seal */
+        if contactA.categoryBitMask == 1 || contactB.categoryBitMask == 1 {
+            gameState = .gameOver
         }
     }
 }
