@@ -88,7 +88,7 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
     }
     
     override func update(_ currentTime: TimeInterval) {
-        if gameState != .gameOver{ return }
+        if gameState != .active{ return }
         if pGo == true{
             hero.position.x += moveDirection
             }
