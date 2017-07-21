@@ -13,6 +13,10 @@ enum GameSceneState {
     case active, gameOver
 }
 
+enum jumpTest {
+    case ground, jump, doubleJump
+}
+
 class GameScene: SKScene, SKPhysicsContactDelegate {
     
     var hero: SKSpriteNode!
@@ -25,6 +29,7 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
     var go = false
     var pGo = false
     var gameState: GameSceneState = .active
+    var jump: jumpTest = .ground
     var moveDirection: CGFloat = 3.5
     /* UI Connections */
     var buttonRestart: MSButtonNode!
@@ -103,8 +108,18 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
     
     func swipedUp(sender:UISwipeGestureRecognizer){
         print("swiped up")
-        if gameState != .gameOver{
-            hero.physicsBody?.applyImpulse(CGVector(dx: 0, dy: 25))
+        if gameState != .gameOver {
+            
+            if jump == .jump || jump == .ground {
+                hero.physicsBody?.applyImpulse(CGVector(dx: 0, dy: 25))
+            }
+            
+            if jump == .ground {
+                jump = .jump
+            }
+            else {
+                jump = .doubleJump
+            }
         }
     }
     
@@ -137,6 +152,7 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
         /* Process obstacles */
         updateObstacles()
         spawnTimer+=fixedDelta
+        print(jump)
     }
     
     func updateObstacles() {
@@ -176,7 +192,7 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
                 // Reset spawn timer
                 spawnTimer = 0
             }
-            if spawnTimer >= 0.9 {
+            if spawnTimer >= 0.8 {
                 go = true
             }
             if go == true {
@@ -198,9 +214,12 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
         let nodeA = contactA.node as! SKSpriteNode
         let nodeB = contactB.node as! SKSpriteNode
         /* Check if either physics bodies was a seal */
-        if contactA.categoryBitMask == 1 || contactB.categoryBitMask == 1 {
+        if contactA.categoryBitMask == 4 || contactB.categoryBitMask == 4 {
             gameState = .gameOver
             buttonRestart.state = .MSButtonNodeStateActive
+        }
+        if contactA.categoryBitMask == 8 || contactB.categoryBitMask == 8 {
+            jump = .ground
         }
     }
 }
