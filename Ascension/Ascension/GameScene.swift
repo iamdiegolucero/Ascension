@@ -18,13 +18,17 @@ enum jumpTest {
 }
 
 class GameScene: SKScene, SKPhysicsContactDelegate {
-    
+
     var hero: SKSpriteNode!
     var platformSource: SKNode!
     var platformLayer: SKNode!
     var startPlatform: SKNode!
+    var scoreLabel: SKLabelNode!
+    var highscoreLabel: SKLabelNode!
     let scrollSpeed: CGFloat = 80
     var spawnTimer: CFTimeInterval = 0
+    var points: Int = 0
+    var highScore: Int = 0
     let fixedDelta: CFTimeInterval = 1.0 / 60.0 /* 60 FPS */
     var go = false
     var pGo = false
@@ -33,7 +37,6 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
     var moveDirection: CGFloat = 3.5
     /* UI Connections */
     var buttonRestart: MSButtonNode!
-    
     override func didMove(to view: SKView) {
         /* Set physics contact delegate */
         physicsWorld.contactDelegate = self
@@ -48,7 +51,8 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
         startPlatform = self.childNode(withName: "startPlatform")
         /* Set UI connections */
         buttonRestart = self.childNode(withName: "buttonRestart") as! MSButtonNode
-        
+        scoreLabel = self.childNode(withName: "scoreLabel") as! SKLabelNode
+        highscoreLabel = self.childNode(withName: "highscoreLabel") as! SKLabelNode
         /* Setup restart button selection handler */
         buttonRestart.selectedHandler = {
             
@@ -65,7 +69,6 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
             skView?.presentScene(scene)
             
             /* Hide restart button */
-            
         }
         
         self.buttonRestart.state = .MSButtonNodeStateHidden
@@ -87,6 +90,7 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
         let swipeDown:UISwipeGestureRecognizer = UISwipeGestureRecognizer(target: self, action: #selector(swipedDown))
         swipeDown.direction = .down
         view.addGestureRecognizer(swipeDown)
+        scoreLabel.text = "\(points)"
     }
     
     func swipedRight(sender:UISwipeGestureRecognizer){
@@ -151,9 +155,13 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
         
         /* Process obstacles */
         updateObstacles()
+        points += 1
         spawnTimer+=fixedDelta
-        print(jump)
+        scoreLabel.text = String(points/60)
+        playerScoreUpdate()
     }
+    
+    
     
     func updateObstacles() {
         if gameState != .gameOver {
@@ -175,7 +183,6 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
                 }
                 
             }
-            
             /* Time to add a new obstacle? */
             if spawnTimer >= 2.1 {
                 
@@ -222,4 +229,16 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
             jump = .ground
         }
     }
+    func randomZeroToOne() -> Double {
+        return Double(arc4random_uniform(UInt32.max)) / Double(UInt32.max)
+    }
+    
+    func playerScoreUpdate() {
+        let highScore = UserDefaults().integer(forKey: "highscore")
+        if points > highScore {
+            UserDefaults().set(points, forKey: "highscore")
+        }
+        highscoreLabel.text = "\(points/60)"
+    }
+
 }
