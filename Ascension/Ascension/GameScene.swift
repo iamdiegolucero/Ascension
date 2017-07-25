@@ -18,7 +18,7 @@ enum jumpTest {
 }
 
 class GameScene: SKScene, SKPhysicsContactDelegate {
-
+    
     var hero: SKSpriteNode!
     var platformSource: SKNode!
     var platformLayer: SKNode!
@@ -28,7 +28,7 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
     let scrollSpeed: CGFloat = 80
     var spawnTimer: CFTimeInterval = 0
     var points: Int = 0
-    var highScore: Int = 0
+    //var highScore: Int = 0
     let fixedDelta: CFTimeInterval = 1.0 / 60.0 /* 60 FPS */
     var go = false
     var pGo = false
@@ -131,11 +131,23 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
         print("swiped down")
     }
     
+    
+    
     override func update(_ currentTime: TimeInterval) {
-        if gameState != .active{ return }
+        if gameState != .active{
+            let defaults = UserDefaults.standard
+            if let highScore: Int = defaults.value(forKey: "HighScore") as? Int {
+                if points > highScore {
+                    defaults.set(points, forKey: "HighScore")
+                    highscoreLabel.text = String(points/60)
+                }
+                return
+            }
+        }
+        
         if pGo == true{
             hero.position.x += moveDirection
-            }
+        }
         /* Grab current velocity */
         let velocityY = hero.physicsBody?.velocity.dy ?? 0
         
@@ -158,7 +170,6 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
         points += 1
         spawnTimer+=fixedDelta
         scoreLabel.text = String(points/60)
-        playerScoreUpdate()
     }
     
     
@@ -233,12 +244,4 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
         return Double(arc4random_uniform(UInt32.max)) / Double(UInt32.max)
     }
     
-    func playerScoreUpdate() {
-        let highScore = UserDefaults().integer(forKey: "highscore")
-        if points > highScore {
-            UserDefaults().set(points, forKey: "highscore")
-        }
-        highscoreLabel.text = "\(points/60)"
-    }
-
 }
