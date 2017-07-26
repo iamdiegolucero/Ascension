@@ -10,7 +10,7 @@ import SpriteKit
 import GameplayKit
 
 enum GameSceneState {
-    case active, gameOver
+    case active, gameOver, menu, pause
 }
 
 enum jumpTest {
@@ -25,6 +25,7 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
     var startPlatform: SKNode!
     var scoreLabel: SKLabelNode!
     var highscoreLabel: SKLabelNode!
+    var title: SKSpriteNode!
     let scrollSpeed: CGFloat = 80
     var spawnTimer: CFTimeInterval = 0
     var points: Int = 0
@@ -32,10 +33,11 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
     let fixedDelta: CFTimeInterval = 1.0 / 60.0 /* 60 FPS */
     var go = false
     var pGo = false
-    var gameState: GameSceneState = .active
+    var gameState: GameSceneState = .menu
     var jump: jumpTest = .ground
     var moveDirection: CGFloat = 3.5
     /* UI Connections */
+    var playButton: MSButtonNode!
     var buttonRestart: MSButtonNode!
     override func didMove(to view: SKView) {
         /* Set physics contact delegate */
@@ -51,9 +53,12 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
         startPlatform = self.childNode(withName: "startPlatform")
         /* Set UI connections */
         buttonRestart = self.childNode(withName: "buttonRestart") as! MSButtonNode
+        playButton = self.childNode(withName: "playButton") as! MSButtonNode
         scoreLabel = self.childNode(withName: "scoreLabel") as! SKLabelNode
         highscoreLabel = self.childNode(withName: "highscoreLabel") as! SKLabelNode
+        title = self.childNode(withName: "title") as! SKSpriteNode
         /* Setup restart button selection handler */
+        self.buttonRestart.state = .MSButtonNodeStateHidden
         buttonRestart.selectedHandler = {
             
             /* Grab reference to our SpriteKit view */
@@ -67,11 +72,19 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
             
             /* Restart game scene */
             skView?.presentScene(scene)
+            self.gameState = .active
             
             /* Hide restart button */
+            self.buttonRestart.state = .MSButtonNodeStateHidden
         }
         
-        self.buttonRestart.state = .MSButtonNodeStateHidden
+        playButton.selectedHandler = {
+            
+            self.gameState = .active
+            self.playButton.state = .MSButtonNodeStateHidden
+        }
+        
+        
         let swipeRight:UISwipeGestureRecognizer = UISwipeGestureRecognizer(target: self, action: #selector(swipedRight))
         swipeRight.direction = .right
         view.addGestureRecognizer(swipeRight)
@@ -112,10 +125,12 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
     
     func swipedUp(sender:UISwipeGestureRecognizer){
         print("swiped up")
-        if gameState != .gameOver {
+        if gameState != .gameOver  {
+            
+            let velocityY = hero.physicsBody?.velocity.dy ?? 0
             
             if jump == .jump || jump == .ground {
-                hero.physicsBody?.applyImpulse(CGVector(dx: 0, dy: 25))
+                hero.physicsBody?.applyImpulse(CGVector(dx: 0, dy: 25 + abs(velocityY)))
             }
             
             if jump == .ground {
@@ -134,15 +149,28 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
     
     
     override func update(_ currentTime: TimeInterval) {
-        if gameState != .active{
-            let defaults = UserDefaults.standard
-            if let highScore: Int = defaults.value(forKey: "HighScore") as? Int {
-                if points > highScore {
-                    defaults.set(points, forKey: "HighScore")
-                    highscoreLabel.text = String(points/60)
-                }
-                return
+        if gameState == .gameOver {
+            return
+        }
+        if gameState == .menu{
+//            let defaults = UserDefaults.standard
+//            if let highScore: Int = defaults.value(forKey: "HighScore") as? Int {
+//                if points > highScore {
+//                    defaults.set(points, forKey: "HighScore")
+//                    highscoreLabel.text = String(points/60)
+//                }
             }
+        
+        if gameState == .menu {
+            let scrollUp = SKAction(named: "scrollUp")
+            title.run(scrollUp!)
+            let scrollRight = SKAction(named: "scrollRight")
+            self.playButton.state = .MSButtonNodeStateActive
+            playButton.run(scrollRight!)
+        }
+        else{
+            title.alpha = 0
+            self.playButton.state = .MSButtonNodeStateHidden
         }
         
         if pGo == true{
@@ -166,10 +194,12 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
         }
         
         /* Process obstacles */
+        if gameState == .active {
         updateObstacles()
         points += 1
         spawnTimer+=fixedDelta
         scoreLabel.text = String(points/60)
+        }
     }
     
     
