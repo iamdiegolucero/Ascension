@@ -29,6 +29,7 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
     let scrollSpeed: CGFloat = 80
     var spawnTimer: CFTimeInterval = 0
     var points: Int = 0
+    var hs = 0
     //var highScore: Int = 0
     let fixedDelta: CFTimeInterval = 1.0 / 60.0 /* 60 FPS */
     var go = false
@@ -39,11 +40,14 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
     /* UI Connections */
     var playButton: MSButtonNode!
     var buttonRestart: MSButtonNode!
+    var pauseButton: MSButtonNode!
+    var resumeButton: MSButtonNode!
+    
     override func didMove(to view: SKView) {
         /* Set physics contact delegate */
         physicsWorld.contactDelegate = self
         
-        /* Setup your scene here */
+//         Setup your scene here
         
         hero = self.childNode(withName: "hero") as! SKSpriteNode
         /* Set reference to obstacle Source node */
@@ -54,11 +58,22 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
         /* Set UI connections */
         buttonRestart = self.childNode(withName: "buttonRestart") as! MSButtonNode
         playButton = self.childNode(withName: "playButton") as! MSButtonNode
+        pauseButton = self.childNode(withName: "pauseButton") as! MSButtonNode
+        resumeButton = self.childNode(withName: "resumeButton") as! MSButtonNode
         scoreLabel = self.childNode(withName: "scoreLabel") as! SKLabelNode
         highscoreLabel = self.childNode(withName: "highscoreLabel") as! SKLabelNode
         title = self.childNode(withName: "title") as! SKSpriteNode
         /* Setup restart button selection handler */
         self.buttonRestart.state = .MSButtonNodeStateHidden
+        self.pauseButton.state = .MSButtonNodeStateHidden
+        self.resumeButton.state = .MSButtonNodeStateHidden
+        
+        let restoredHS = UserDefaults.standard.value(forKey: "hs") as? NSInteger
+//        print("\n\nHighScore Restored: ", restoredHS!/60)
+        if let temp = restoredHS {
+            hs = temp
+        }
+        highscoreLabel.text = String(Int(hs/60))
         buttonRestart.selectedHandler = {
             
             /* Grab reference to our SpriteKit view */
@@ -82,6 +97,17 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
             
             self.gameState = .active
             self.playButton.state = .MSButtonNodeStateHidden
+            self.pauseButton.state = .MSButtonNodeStateActive
+        }
+        
+        pauseButton.selectedHandler = {
+            self.gameState = .pause
+            self.resumeButton.state = .MSButtonNodeStateActive
+        }
+        
+        resumeButton.selectedHandler = {
+            self.gameState = .active
+            self.pauseButton.state = .MSButtonNodeStateActive
         }
         
         
@@ -107,7 +133,7 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
     }
     
     func swipedRight(sender:UISwipeGestureRecognizer){
-        print("swiped right")
+//        print("swiped right")
         pGo = true
         //hero.physicsBody?.velocity.dx = 200
         moveDirection = 3.5
@@ -115,7 +141,7 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
     }
     
     func swipedLeft(sender:UISwipeGestureRecognizer){
-        print("swiped left")
+//        print("swiped left")
         pGo = true
         //hero.physicsBody?.velocity.dx = -200
         moveDirection = -3.5
@@ -124,13 +150,13 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
     }
     
     func swipedUp(sender:UISwipeGestureRecognizer){
-        print("swiped up")
-        if gameState != .gameOver  {
+//        print("swiped up")
+        if gameState == .active  {
             
             let velocityY = hero.physicsBody?.velocity.dy ?? 0
             
             if jump == .jump || jump == .ground {
-                hero.physicsBody?.applyImpulse(CGVector(dx: 0, dy: 25 + abs(velocityY)))
+                hero.physicsBody?.applyImpulse(CGVector(dx: 0, dy: 24 + abs(velocityY)))
             }
             
             if jump == .ground {
@@ -143,23 +169,14 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
     }
     
     func swipedDown(sender:UISwipeGestureRecognizer){
-        print("swiped down")
+//        print("swiped down")
     }
-    
     
     
     override func update(_ currentTime: TimeInterval) {
         if gameState == .gameOver {
             return
         }
-        if gameState == .menu{
-//            let defaults = UserDefaults.standard
-//            if let highScore: Int = defaults.value(forKey: "HighScore") as? Int {
-//                if points > highScore {
-//                    defaults.set(points, forKey: "HighScore")
-//                    highscoreLabel.text = String(points/60)
-//                }
-            }
         
         if gameState == .menu {
             let scrollUp = SKAction(named: "scrollUp")
@@ -172,10 +189,13 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
             title.alpha = 0
             self.playButton.state = .MSButtonNodeStateHidden
         }
-        
-        if pGo == true{
-            hero.position.x += moveDirection
+        if gameState == .active {
+            if pGo == true{
+                hero.position.x += moveDirection
+            }
+            self.resumeButton.state = .MSButtonNodeStateHidden
         }
+        
         /* Grab current velocity */
         let velocityY = hero.physicsBody?.velocity.dy ?? 0
         
@@ -200,12 +220,26 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
         spawnTimer+=fixedDelta
         scoreLabel.text = String(points/60)
         }
+        
+        //Set highscore
+        if points > hs {
+            hs = points
+            highscoreLabel.text = String(points/60)
+            var HighscoreDefault = UserDefaults.standard
+            HighscoreDefault.setValue(hs, forKey: "hs")
+            HighscoreDefault.synchronize()
+        }
+        
+        
+        if gameState == .pause || gameState == .gameOver {
+            self.pauseButton.state = .MSButtonNodeStateHidden
+        }
     }
     
     
     
     func updateObstacles() {
-        if gameState != .gameOver {
+        if gameState == .active {
             /* Update Obstacles */
             
             platformLayer.position.y -= scrollSpeed * CGFloat(fixedDelta)
@@ -261,17 +295,18 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
         /* Get references to the physics body parent SKSpriteNode */
         let nodeA = contactA.node as! SKSpriteNode
         let nodeB = contactB.node as! SKSpriteNode
-        /* Check if either physics bodies was a seal */
-        if contactA.categoryBitMask == 4 || contactB.categoryBitMask == 4 {
+        /* Check if either physics bodies was lava */
+        if (contactA.categoryBitMask == 4 && contactB.categoryBitMask == 1) || (contactB.categoryBitMask == 4 && contactA.categoryBitMask == 1) {
             gameState = .gameOver
+            UserDefaults.standard.setValue(hs, forKey: "hs")
             buttonRestart.state = .MSButtonNodeStateActive
         }
         if contactA.categoryBitMask == 8 || contactB.categoryBitMask == 8 {
             jump = .ground
         }
     }
-    func randomZeroToOne() -> Double {
-        return Double(arc4random_uniform(UInt32.max)) / Double(UInt32.max)
-    }
+    
+    
+    
     
 }
