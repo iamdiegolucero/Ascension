@@ -20,6 +20,7 @@ enum jumpTest {
 class GameScene: SKScene, SKPhysicsContactDelegate {
     
     var hero: SKSpriteNode!
+    var fireball: SKSpriteNode!
     var platformSource: SKNode!
     var platformLayer: SKNode!
     var startPlatform: SKNode!
@@ -27,10 +28,8 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
     var scoreLabel: SKLabelNode!
     var highscoreLabel: SKLabelNode!
     var title: SKSpriteNode!
-    var lavaBall: SKSpriteNode!
     let scrollSpeed: CGFloat = 100
     var spawnTimer: CFTimeInterval = 0
-    var fireballSpawnTimer: CFTimeInterval = 0
     var points: Int = 0
     var hs = 0
     let fixedDelta: CFTimeInterval = 1.0 / 60.0 /* 60 FPS */
@@ -38,7 +37,7 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
     var pGo = false
     var gameState: GameSceneState = .menu
     var jump: jumpTest = .ground
-    var moveDirection: CGFloat = 2.5
+    var moveDirection: CGFloat = 2.7
     /* UI Connections */
     var playButton: MSButtonNode!
     var buttonRestart: MSButtonNode!
@@ -52,7 +51,10 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
         //         Setup your scene here
         
         hero = self.childNode(withName: "hero") as! SKSpriteNode
-        lavaBall = self.childNode(withName: "lavaBall") as! SKSpriteNode
+        
+        //Fireball
+        
+        
         /* Set reference to obstacle Source node */
         platformSource = self.childNode(withName: "platform")
         /* Set reference to obstacle layer node */
@@ -97,21 +99,24 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
             self.buttonRestart.state = .MSButtonNodeStateHidden
         }
         
-        playButton.selectedHandler = {
-            
-            self.gameState = .active
-            self.playButton.state = .MSButtonNodeStateHidden
-            self.pauseButton.state = .MSButtonNodeStateActive
+            playButton.selectedHandler = {
+                    self.gameState = .active
+                    self.playButton.state = .MSButtonNodeStateHidden
+                    self.pauseButton.state = .MSButtonNodeStateActive
         }
         
         pauseButton.selectedHandler = {
-            self.gameState = .pause
+            if self.gameState == .active {
             self.resumeButton.state = .MSButtonNodeStateActive
+            }
+            self.gameState = .pause
         }
         
         resumeButton.selectedHandler = {
-            self.gameState = .active
-            self.pauseButton.state = .MSButtonNodeStateActive
+            if self.gameState != .gameOver {
+                self.gameState = .active
+                self.pauseButton.state = .MSButtonNodeStateActive
+            }
         }
         
         
@@ -140,7 +145,7 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
         //        print("swiped right")
         pGo = true
         //hero.physicsBody?.velocity.dx = 200
-        moveDirection = 2.5
+        moveDirection = 2.7
         
     }
     
@@ -148,7 +153,7 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
         //        print("swiped left")
         pGo = true
         //hero.physicsBody?.velocity.dx = -200
-        moveDirection = -2.5
+        moveDirection = -2.7
         
         
     }
@@ -220,10 +225,9 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
         /* Process obstacles */
         if gameState == .active {
             updateObstacles()
-            fireBallSpawner()
+            //fireBallSpawner()
             points += 1
             spawnTimer += fixedDelta
-            //fireballSpawnTimer += fixedDelta
             scoreLabel.text = String(points/60)
         }
         
@@ -241,6 +245,7 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
         if gameState == .pause || gameState == .gameOver {
             self.pauseButton.state = .MSButtonNodeStateHidden
         }
+        print(gameState)
     }
     
     
@@ -308,6 +313,10 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
             gameState = .gameOver
             UserDefaults.standard.setValue(hs, forKey: "hs")
             buttonRestart.state = .MSButtonNodeStateActive
+            resumeButton.state = .MSButtonNodeStateHidden
+            pauseButton.state = .MSButtonNodeStateHidden
+            gameState = .gameOver
+            print(gameState)
         }
         if contactA.categoryBitMask == 8 || contactB.categoryBitMask == 8 {
             jump = .ground
@@ -316,41 +325,7 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
     
     
     func fireBallSpawner() {
-        if points > 17 {
-            lavaLayer.position.y += scrollSpeed * CGFloat(fixedDelta)
-            
-            /* Loop through obstacle layer nodes */
-            for lava in lavaLayer.children as! [SKReferenceNode] {
-                
-                /* Get obstacle node position, convert node position to scene space */
-                let lavaPosition = lavaLayer.convert(lava.position, to: self)
-                
-                /* Check if obstacle has left the scene */
-                if lavaPosition.y >= 240 {
-                    
-                    /* Remove obstacle node from obstacle layer */
-                    lava.removeFromParent()
-                }
-                
-            }
-            /* Time to add a new obstacle? */
-            if fireballSpawnTimer >= 3 {
-                
-                /* Create a new obstacle by copying the source obstacle */
-                let newFireBall = lavaBall.copy() as! SKNode
-                lavaLayer.addChild(newFireBall)
-                
-                /* Generate new obstacle position, start just outside screen and with a random y value */
-                let randomPosition = CGPoint(x: CGFloat.random(min: 127, max: 127), y: -316)
-                
-                /* Convert new node position back to obstacle layer space */
-                newFireBall.position = self.convert(randomPosition, to: platformLayer)
-                
-                // Reset spawn timer
-                fireballSpawnTimer = 0
-            }
-        }
+        
     }
-    
 }
 
