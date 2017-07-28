@@ -23,20 +23,22 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
     var platformSource: SKNode!
     var platformLayer: SKNode!
     var startPlatform: SKNode!
+    var lavaLayer: SKNode!
     var scoreLabel: SKLabelNode!
     var highscoreLabel: SKLabelNode!
     var title: SKSpriteNode!
-    let scrollSpeed: CGFloat = 80
+    var lavaBall: SKSpriteNode!
+    let scrollSpeed: CGFloat = 100
     var spawnTimer: CFTimeInterval = 0
+    var fireballSpawnTimer: CFTimeInterval = 0
     var points: Int = 0
     var hs = 0
-    //var highScore: Int = 0
     let fixedDelta: CFTimeInterval = 1.0 / 60.0 /* 60 FPS */
     var go = false
     var pGo = false
     var gameState: GameSceneState = .menu
     var jump: jumpTest = .ground
-    var moveDirection: CGFloat = 3.5
+    var moveDirection: CGFloat = 2.5
     /* UI Connections */
     var playButton: MSButtonNode!
     var buttonRestart: MSButtonNode!
@@ -47,13 +49,15 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
         /* Set physics contact delegate */
         physicsWorld.contactDelegate = self
         
-//         Setup your scene here
+        //         Setup your scene here
         
         hero = self.childNode(withName: "hero") as! SKSpriteNode
+        lavaBall = self.childNode(withName: "lavaBall") as! SKSpriteNode
         /* Set reference to obstacle Source node */
         platformSource = self.childNode(withName: "platform")
         /* Set reference to obstacle layer node */
         platformLayer = self.childNode(withName: "platformLayer")
+        lavaLayer = self.childNode(withName: "lavaLayer")
         startPlatform = self.childNode(withName: "startPlatform")
         /* Set UI connections */
         buttonRestart = self.childNode(withName: "buttonRestart") as! MSButtonNode
@@ -69,7 +73,7 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
         self.resumeButton.state = .MSButtonNodeStateHidden
         
         let restoredHS = UserDefaults.standard.value(forKey: "hs") as? NSInteger
-//        print("\n\nHighScore Restored: ", restoredHS!/60)
+        //        print("\n\nHighScore Restored: ", restoredHS!/60)
         if let temp = restoredHS {
             hs = temp
         }
@@ -133,24 +137,24 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
     }
     
     func swipedRight(sender:UISwipeGestureRecognizer){
-//        print("swiped right")
+        //        print("swiped right")
         pGo = true
         //hero.physicsBody?.velocity.dx = 200
-        moveDirection = 3.5
+        moveDirection = 2.5
         
     }
     
     func swipedLeft(sender:UISwipeGestureRecognizer){
-//        print("swiped left")
+        //        print("swiped left")
         pGo = true
         //hero.physicsBody?.velocity.dx = -200
-        moveDirection = -3.5
+        moveDirection = -2.5
         
         
     }
     
     func swipedUp(sender:UISwipeGestureRecognizer){
-//        print("swiped up")
+        //        print("swiped up")
         if gameState == .active  {
             
             let velocityY = hero.physicsBody?.velocity.dy ?? 0
@@ -169,7 +173,7 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
     }
     
     func swipedDown(sender:UISwipeGestureRecognizer){
-//        print("swiped down")
+        //        print("swiped down")
     }
     
     
@@ -215,10 +219,12 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
         
         /* Process obstacles */
         if gameState == .active {
-        updateObstacles()
-        points += 1
-        spawnTimer+=fixedDelta
-        scoreLabel.text = String(points/60)
+            updateObstacles()
+            fireBallSpawner()
+            points += 1
+            spawnTimer += fixedDelta
+            //fireballSpawnTimer += fixedDelta
+            scoreLabel.text = String(points/60)
         }
         
         //Set highscore
@@ -229,6 +235,7 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
             HighscoreDefault.setValue(hs, forKey: "hs")
             HighscoreDefault.synchronize()
         }
+        
         
         
         if gameState == .pause || gameState == .gameOver {
@@ -259,7 +266,7 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
                 
             }
             /* Time to add a new obstacle? */
-            if spawnTimer >= 2.1 {
+            if spawnTimer >= 1.8 {
                 
                 /* Create a new obstacle by copying the source obstacle */
                 let newPlatform = platformSource.copy() as! SKNode
@@ -287,6 +294,7 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
         }
     }
     
+    
     func didBegin(_ contact: SKPhysicsContact) {
         /* Physics contact delegate implementation */
         /* Get references to the bodies involved in the collision */
@@ -307,6 +315,42 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
     }
     
     
-    
+    func fireBallSpawner() {
+        if points > 17 {
+            lavaLayer.position.y += scrollSpeed * CGFloat(fixedDelta)
+            
+            /* Loop through obstacle layer nodes */
+            for lava in lavaLayer.children as! [SKReferenceNode] {
+                
+                /* Get obstacle node position, convert node position to scene space */
+                let lavaPosition = lavaLayer.convert(lava.position, to: self)
+                
+                /* Check if obstacle has left the scene */
+                if lavaPosition.y >= 240 {
+                    
+                    /* Remove obstacle node from obstacle layer */
+                    lava.removeFromParent()
+                }
+                
+            }
+            /* Time to add a new obstacle? */
+            if fireballSpawnTimer >= 3 {
+                
+                /* Create a new obstacle by copying the source obstacle */
+                let newFireBall = lavaBall.copy() as! SKNode
+                lavaLayer.addChild(newFireBall)
+                
+                /* Generate new obstacle position, start just outside screen and with a random y value */
+                let randomPosition = CGPoint(x: CGFloat.random(min: 127, max: 127), y: -316)
+                
+                /* Convert new node position back to obstacle layer space */
+                newFireBall.position = self.convert(randomPosition, to: platformLayer)
+                
+                // Reset spawn timer
+                fireballSpawnTimer = 0
+            }
+        }
+    }
     
 }
+
