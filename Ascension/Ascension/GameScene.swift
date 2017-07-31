@@ -24,12 +24,13 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
     var platformSource: SKNode!
     var platformLayer: SKNode!
     var startPlatform: SKNode!
-    var lavaLayer: SKNode!
+    var fireballLayer: SKNode!
     var scoreLabel: SKLabelNode!
     var highscoreLabel: SKLabelNode!
     var title: SKSpriteNode!
     let scrollSpeed: CGFloat = 100
     var spawnTimer: CFTimeInterval = 0
+    var fireballSpawnTimer: CFTimeInterval = 0
     var points: Int = 0
     var hs = 0
     let fixedDelta: CFTimeInterval = 1.0 / 60.0 /* 60 FPS */
@@ -48,18 +49,18 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
         /* Set physics contact delegate */
         physicsWorld.contactDelegate = self
         
-        //         Setup your scene here
+        //Setup your scene here
         
         hero = self.childNode(withName: "hero") as! SKSpriteNode
         
-        //Fireball
+        // Fireball
         
         
         /* Set reference to obstacle Source node */
         platformSource = self.childNode(withName: "platform")
         /* Set reference to obstacle layer node */
         platformLayer = self.childNode(withName: "platformLayer")
-        lavaLayer = self.childNode(withName: "lavaLayer")
+        fireballLayer = self.childNode(withName: "fireballLayer")
         startPlatform = self.childNode(withName: "startPlatform")
         /* Set UI connections */
         buttonRestart = self.childNode(withName: "buttonRestart") as! MSButtonNode
@@ -69,6 +70,7 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
         scoreLabel = self.childNode(withName: "scoreLabel") as! SKLabelNode
         highscoreLabel = self.childNode(withName: "highscoreLabel") as! SKLabelNode
         title = self.childNode(withName: "title") as! SKSpriteNode
+        fireball = self.childNode(withName: "fireball") as! SKSpriteNode
         /* Setup restart button selection handler */
         self.buttonRestart.state = .MSButtonNodeStateHidden
         self.pauseButton.state = .MSButtonNodeStateHidden
@@ -99,15 +101,15 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
             self.buttonRestart.state = .MSButtonNodeStateHidden
         }
         
-            playButton.selectedHandler = {
-                    self.gameState = .active
-                    self.playButton.state = .MSButtonNodeStateHidden
-                    self.pauseButton.state = .MSButtonNodeStateActive
+        playButton.selectedHandler = {
+            self.gameState = .active
+            self.playButton.state = .MSButtonNodeStateHidden
+            self.pauseButton.state = .MSButtonNodeStateActive
         }
         
         pauseButton.selectedHandler = {
             if self.gameState == .active {
-            self.resumeButton.state = .MSButtonNodeStateActive
+                self.resumeButton.state = .MSButtonNodeStateActive
             }
             self.gameState = .pause
         }
@@ -225,9 +227,10 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
         /* Process obstacles */
         if gameState == .active {
             updateObstacles()
-            //fireBallSpawner()
+            fireBallSpawner()
             points += 1
             spawnTimer += fixedDelta
+            fireballSpawnTimer += fixedDelta
             scoreLabel.text = String(points/60)
         }
         
@@ -245,7 +248,7 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
         if gameState == .pause || gameState == .gameOver {
             self.pauseButton.state = .MSButtonNodeStateHidden
         }
-        print(gameState)
+        // print(gameState)
     }
     
     
@@ -316,7 +319,6 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
             resumeButton.state = .MSButtonNodeStateHidden
             pauseButton.state = .MSButtonNodeStateHidden
             gameState = .gameOver
-            print(gameState)
         }
         if contactA.categoryBitMask == 8 || contactB.categoryBitMask == 8 {
             jump = .ground
@@ -325,7 +327,27 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
     
     
     func fireBallSpawner() {
-        
+        if gameState == .active {
+            // fireball.position.y += scrollSpeed * CGFloat(fixedDelta)
+            for fireball in fireballLayer.children as! [SKSpriteNode] {
+                let fireballPosition = fireballLayer.convert(fireball.position, to: self)
+                if fireballPosition.y > 316 {
+                    
+                    fireball.removeFromParent()
+                }
+            }
+            if points > 60*15 {
+                fireballLayer.position.y += scrollSpeed * CGFloat(fixedDelta) * 1.2
+                if fireballSpawnTimer > 3.5 {
+                    let newFireball = fireball.copy() as! SKSpriteNode
+                    fireballLayer.addChild(newFireball)
+                    let randomPosition = CGPoint(x: CGFloat.random(min: -145, max: 145), y: -299)
+                    newFireball.position = self.convert(randomPosition, to:fireballLayer)
+                    print(fireballLayer.position)
+                    fireballSpawnTimer = 0
+                }
+            }
+        }
     }
 }
 
