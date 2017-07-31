@@ -323,6 +323,15 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
         if contactA.categoryBitMask == 8 || contactB.categoryBitMask == 8 {
             jump = .ground
         }
+
+        if (contactA.categoryBitMask == 16 && contactB.categoryBitMask == 1) || (contactB.categoryBitMask == 16 && contactA.categoryBitMask == 1) {
+            gameState = .gameOver
+            UserDefaults.standard.setValue(hs, forKey: "hs")
+            buttonRestart.state = .MSButtonNodeStateActive
+            resumeButton.state = .MSButtonNodeStateHidden
+            pauseButton.state = .MSButtonNodeStateHidden
+            gameState = .gameOver
+        }
     }
     
     
