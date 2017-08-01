@@ -19,6 +19,9 @@
 		EC4FC1FB1F20FE6E00D71038 /* CGFloat+Extensions.swift in Sources */ = {isa = PBXBuildFile; fileRef = EC4FC1FA1F20FE6E00D71038 /* CGFloat+Extensions.swift */; };
 		EC7940451F1EAFC400595845 /* Hero.swift in Sources */ = {isa = PBXBuildFile; fileRef = EC7940441F1EAFC400595845 /* Hero.swift */; };
 		EC7B819F1F215A88004B21E0 /* MSButtonNode.swift in Sources */ = {isa = PBXBuildFile; fileRef = EC7B819E1F215A88004B21E0 /* MSButtonNode.swift */; };
+		EC9CCB6A1F30FC36004065AE /* Random.swift in Sources */ = {isa = PBXBuildFile; fileRef = EC9CCB691F30FC36004065AE /* Random.swift */; };
+		EC9CCB711F31083E004065AE /* Death.sks in Resources */ = {isa = PBXBuildFile; fileRef = EC9CCB6F1F31083E004065AE /* Death.sks */; };
+		EC9CCB721F31083E004065AE /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = EC9CCB701F31083E004065AE /* Assets.xcassets */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -36,6 +39,9 @@
 		EC4FC1FA1F20FE6E00D71038 /* CGFloat+Extensions.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = "CGFloat+Extensions.swift"; sourceTree = "<group>"; };
 		EC7940441F1EAFC400595845 /* Hero.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Hero.swift; sourceTree = "<group>"; };
 		EC7B819E1F215A88004B21E0 /* MSButtonNode.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = MSButtonNode.swift; sourceTree = "<group>"; };
+		EC9CCB691F30FC36004065AE /* Random.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Random.swift; sourceTree = "<group>"; };
+		EC9CCB6F1F31083E004065AE /* Death.sks */ = {isa = PBXFileReference; lastKnownFileType = file.sks; path = Death.sks; sourceTree = "<group>"; };
+		EC9CCB701F31083E004065AE /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -52,6 +58,8 @@
 		EC4299261F1E957000D9550E = {
 			isa = PBXGroup;
 			children = (
+				EC9CCB6F1F31083E004065AE /* Death.sks */,
+				EC9CCB701F31083E004065AE /* Assets.xcassets */,
 				EC4299311F1E957000D9550E /* Ascension */,
 				EC4299301F1E957000D9550E /* Products */,
 			);
@@ -73,6 +81,7 @@
 				EC4299361F1E957000D9550E /* Actions.sks */,
 				EC4299341F1E957000D9550E /* GameScene.sks */,
 				EC4299381F1E957000D9550E /* GameScene.swift */,
+				EC9CCB691F30FC36004065AE /* Random.swift */,
 				EC7B819E1F215A88004B21E0 /* MSButtonNode.swift */,
 				EC7940441F1EAFC400595845 /* Hero.swift */,
 				EC42993A1F1E957000D9550E /* GameViewController.swift */,
@@ -145,11 +154,13 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				EC9CCB711F31083E004065AE /* Death.sks in Resources */,
 				EC42993E1F1E957000D9550E /* Main.storyboard in Resources */,
 				EC4299351F1E957000D9550E /* GameScene.sks in Resources */,
 				EC4299401F1E957000D9550E /* Assets.xcassets in Resources */,
 				EC4299431F1E957000D9550E /* LaunchScreen.storyboard in Resources */,
 				EC42994B1F1E9D2900D9550E /* Platform.sks in Resources */,
+				EC9CCB721F31083E004065AE /* Assets.xcassets in Resources */,
 				EC4299371F1E957000D9550E /* Actions.sks in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -167,6 +178,7 @@
 				EC7B819F1F215A88004B21E0 /* MSButtonNode.swift in Sources */,
 				EC4299331F1E957000D9550E /* AppDelegate.swift in Sources */,
 				EC7940451F1EAFC400595845 /* Hero.swift in Sources */,
+				EC9CCB6A1F30FC36004065AE /* Random.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

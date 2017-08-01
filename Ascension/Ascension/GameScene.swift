@@ -35,7 +35,6 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
     var hs = 0
     let fixedDelta: CFTimeInterval = 1.0 / 60.0 /* 60 FPS */
     var go = false
-    var pGo = false
     var gameState: GameSceneState = .menu
     var jump: jumpTest = .ground
     var moveDirection: CGFloat = 2.7
@@ -54,8 +53,6 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
         hero = self.childNode(withName: "hero") as! SKSpriteNode
         
         // Fireball
-        
-        
         /* Set reference to obstacle Source node */
         platformSource = self.childNode(withName: "platform")
         /* Set reference to obstacle layer node */
@@ -103,6 +100,13 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
         
         playButton.selectedHandler = {
             self.gameState = .active
+            
+            if randomZeroToOne() > 0.5 {
+                self.moveDirection = 2.7
+            }
+            else {
+                self.moveDirection = -2.7
+            }
             self.playButton.state = .MSButtonNodeStateHidden
             self.pauseButton.state = .MSButtonNodeStateActive
         }
@@ -145,7 +149,6 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
     
     func swipedRight(sender:UISwipeGestureRecognizer){
         //        print("swiped right")
-        pGo = true
         //hero.physicsBody?.velocity.dx = 200
         moveDirection = 2.7
         
@@ -153,7 +156,6 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
     
     func swipedLeft(sender:UISwipeGestureRecognizer){
         //        print("swiped left")
-        pGo = true
         //hero.physicsBody?.velocity.dx = -200
         moveDirection = -2.7
         
@@ -167,7 +169,7 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
             let velocityY = hero.physicsBody?.velocity.dy ?? 0
             
             if jump == .jump || jump == .ground {
-                hero.physicsBody?.applyImpulse(CGVector(dx: 0, dy: 24 + abs(velocityY)))
+                hero.physicsBody?.applyImpulse(CGVector(dx: 0, dy: 20 + abs(velocityY)))
             }
             
             if jump == .ground {
@@ -201,9 +203,7 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
             self.playButton.state = .MSButtonNodeStateHidden
         }
         if gameState == .active {
-            if pGo == true{
-                hero.position.x += moveDirection
-            }
+            hero.position.x += moveDirection
             self.resumeButton.state = .MSButtonNodeStateHidden
         }
         
@@ -345,7 +345,7 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
                     fireball.removeFromParent()
                 }
             }
-            if points > 60*15 {
+            if points > 60*20 {
                 fireballLayer.position.y += scrollSpeed * CGFloat(fixedDelta) * 1.2
                 if fireballSpawnTimer > 3.5 {
                     let newFireball = fireball.copy() as! SKSpriteNode
