@@ -223,7 +223,7 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
         if hero.position.x > 150 {
             hero.position.x = -150
         }
-        
+        animationTest()
         /* Process obstacles */
         if gameState == .active {
             updateObstacles()
@@ -319,6 +319,7 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
             resumeButton.state = .MSButtonNodeStateHidden
             pauseButton.state = .MSButtonNodeStateHidden
             gameState = .gameOver
+
         }
         if contactA.categoryBitMask == 8 || contactB.categoryBitMask == 8 {
             jump = .ground
@@ -345,7 +346,7 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
                     fireball.removeFromParent()
                 }
             }
-            if points > 60*20 {
+            if points > 60*15 {
                 fireballLayer.position.y += scrollSpeed * CGFloat(fixedDelta) * 1.2
                 if fireballSpawnTimer > 3.5 {
                     let newFireball = fireball.copy() as! SKSpriteNode
@@ -356,6 +357,12 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
                     fireballSpawnTimer = 0
                 }
             }
+        }
+    }
+    func animationTest() {
+        if gameState != .active {
+            hero.removeAllActions()
+            fireball.removeAllActions()
         }
     }
 }
