@@ -10,7 +10,7 @@ import SpriteKit
 import GameplayKit
 
 enum GameSceneState {
-    case active, gameOver, menu, pause
+    case active, gameOver, menu, pause, tutorial
 }
 
 enum jumpTest {
@@ -43,6 +43,7 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
     var buttonRestart: MSButtonNode!
     var pauseButton: MSButtonNode!
     var resumeButton: MSButtonNode!
+    var tutorialButton: MSButtonNode!
     
     override func didMove(to view: SKView) {
         /* Set physics contact delegate */
@@ -64,6 +65,7 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
         playButton = self.childNode(withName: "playButton") as! MSButtonNode
         pauseButton = self.childNode(withName: "pauseButton") as! MSButtonNode
         resumeButton = self.childNode(withName: "resumeButton") as! MSButtonNode
+        tutorialButton = self.childNode(withName: "tutorialButton") as! MSButtonNode
         scoreLabel = self.childNode(withName: "scoreLabel") as! SKLabelNode
         highscoreLabel = self.childNode(withName: "highscoreLabel") as! SKLabelNode
         title = self.childNode(withName: "title") as! SKSpriteNode
@@ -108,6 +110,7 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
                 self.moveDirection = -2.7
             }
             self.playButton.state = .MSButtonNodeStateHidden
+            self.tutorialButton.state = .MSButtonNodeStateHidden
             self.pauseButton.state = .MSButtonNodeStateActive
         }
         
@@ -125,6 +128,20 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
             }
         }
         
+        tutorialButton.selectedHandler = {
+            let skView = self.view as SKView!
+            
+            /* Load Game scene */
+            let scene = TutorialScene(fileNamed:"Tutorial") as TutorialScene!
+            
+            /* Ensure correct aspect mode */
+            scene?.scaleMode = .aspectFill
+            
+            /* Restart game scene */
+            skView?.presentScene(scene)
+            self.gameState = .tutorial
+
+        }
         
         let swipeRight:UISwipeGestureRecognizer = UISwipeGestureRecognizer(target: self, action: #selector(swipedRight))
         swipeRight.direction = .right
@@ -192,11 +209,14 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
         }
         
         if gameState == .menu {
-            let scrollUp = SKAction(named: "scrollUp")
-            title.run(scrollUp!)
             let scrollRight = SKAction(named: "scrollRight")
+            let scrollUp = SKAction(named: "scrollUp")
+            let tutorialButtonMove = SKAction(named: "tutorialButtonMove")
+            title.run(scrollUp!)
             self.playButton.state = .MSButtonNodeStateActive
             playButton.run(scrollRight!)
+            self.tutorialButton.state = .MSButtonNodeStateActive
+            tutorialButton.run(tutorialButtonMove!)
         }
         else{
             title.alpha = 0
@@ -309,8 +329,8 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
         let contactA:SKPhysicsBody = contact.bodyA
         let contactB:SKPhysicsBody = contact.bodyB
         /* Get references to the physics body parent SKSpriteNode */
-        let nodeA = contactA.node as! SKSpriteNode
-        let nodeB = contactB.node as! SKSpriteNode
+//        let nodeA = contactA.node as! SKSpriteNode
+//        let nodeB = contactB.node as! SKSpriteNode
         /* Check if either physics bodies was lava */
         if (contactA.categoryBitMask == 4 && contactB.categoryBitMask == 1) || (contactB.categoryBitMask == 4 && contactA.categoryBitMask == 1) {
             gameState = .gameOver
