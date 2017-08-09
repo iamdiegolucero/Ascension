@@ -17,8 +17,13 @@ enum jumpTest {
     case ground, jump, doubleJump
 }
 
+enum gameOverText {
+    case moveTip, jumpTip, dodgeTip
+}
+
 class GameScene: SKScene, SKPhysicsContactDelegate {
     
+    var tap: UITapGestureRecognizer!
     var hero: SKSpriteNode!
     var fireball: SKSpriteNode!
     var platformSource: SKNode!
@@ -27,6 +32,7 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
     var fireballLayer: SKNode!
     var scoreLabel: SKLabelNode!
     var highscoreLabel: SKLabelNode!
+    var tips: SKLabelNode!
     var title: SKSpriteNode!
     let scrollSpeed: CGFloat = 100
     var spawnTimer: CFTimeInterval = 0
@@ -41,14 +47,12 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
     /* UI Connections */
     var playButton: MSButtonNode!
     var buttonRestart: MSButtonNode!
-    var pauseButton: MSButtonNode!
-    var resumeButton: MSButtonNode!
-    var tutorialButton: MSButtonNode!
+    var pauseButton: SKSpriteNode!
+    var resumeButton: SKSpriteNode!
     
     override func didMove(to view: SKView) {
         /* Set physics contact delegate */
         physicsWorld.contactDelegate = self
-        
         //Setup your scene here
         
         hero = self.childNode(withName: "hero") as! SKSpriteNode
@@ -63,20 +67,21 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
         /* Set UI connections */
         buttonRestart = self.childNode(withName: "buttonRestart") as! MSButtonNode
         playButton = self.childNode(withName: "playButton") as! MSButtonNode
-        pauseButton = self.childNode(withName: "pauseButton") as! MSButtonNode
-        resumeButton = self.childNode(withName: "resumeButton") as! MSButtonNode
-        tutorialButton = self.childNode(withName: "tutorialButton") as! MSButtonNode
+        pauseButton = self.childNode(withName: "pauseButton") as! SKSpriteNode
+        resumeButton = self.childNode(withName: "resumeButton") as! SKSpriteNode
         scoreLabel = self.childNode(withName: "scoreLabel") as! SKLabelNode
         highscoreLabel = self.childNode(withName: "highscoreLabel") as! SKLabelNode
+        tips = self.childNode(withName: "tips") as! SKLabelNode
         title = self.childNode(withName: "title") as! SKSpriteNode
         fireball = self.childNode(withName: "fireball") as! SKSpriteNode
         /* Setup restart button selection handler */
         self.buttonRestart.state = .MSButtonNodeStateHidden
-        self.pauseButton.state = .MSButtonNodeStateHidden
-        self.resumeButton.state = .MSButtonNodeStateHidden
-        
+        self.pauseButton.isHidden = true
+        self.resumeButton.isHidden = true
+        self.tips.isHidden = true
         let restoredHS = UserDefaults.standard.value(forKey: "hs") as? NSInteger
-        //        print("\n\nHighScore Restored: ", restoredHS!/60)
+        self.tap = UITapGestureRecognizer(target: self, action: #selector(self.tapped))
+        // print("\n\nHighScore Restored: ", restoredHS!/60)
         if let temp = restoredHS {
             hs = temp
         }
@@ -102,7 +107,7 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
         
         playButton.selectedHandler = {
             self.gameState = .active
-            
+            self.startGame()
             if randomZeroToOne() > 0.5 {
                 self.moveDirection = 2.7
             }
@@ -110,38 +115,37 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
                 self.moveDirection = -2.7
             }
             self.playButton.state = .MSButtonNodeStateHidden
-            self.tutorialButton.state = .MSButtonNodeStateHidden
-            self.pauseButton.state = .MSButtonNodeStateActive
+            self.pauseButton.isHidden = false
         }
         
-        pauseButton.selectedHandler = {
-            if self.gameState == .active {
-                self.resumeButton.state = .MSButtonNodeStateActive
-            }
-            self.gameState = .pause
-        }
+//        pauseButton.selectedHandler = {
+//            if self.gameState == .active {
+//                self.resumeButton.state = .MSButtonNodeStateActive
+//            }
+//            self.gameState = .pause
+//        }
         
-        resumeButton.selectedHandler = {
-            if self.gameState != .gameOver {
-                self.gameState = .active
-                self.pauseButton.state = .MSButtonNodeStateActive
-            }
-        }
+//        resumeButton.selectedHandler = {
+//            if self.gameState != .gameOver {
+//                self.gameState = .active
+////                self.pauseButton.state = .MSButtonNodeStateActive
+//            }
+//        }
         
-        tutorialButton.selectedHandler = {
-            let skView = self.view as SKView!
-            
-            /* Load Game scene */
-            let scene = TutorialScene(fileNamed:"Tutorial") as TutorialScene!
-            
-            /* Ensure correct aspect mode */
-            scene?.scaleMode = .aspectFill
-            
-            /* Restart game scene */
-            skView?.presentScene(scene)
-            self.gameState = .tutorial
-
-        }
+//        tutorialButton.selectedHandler = {
+//            let skView = self.view as SKView!
+//            
+//            /* Load Game scene */
+//            let scene = TutorialScene(fileNamed:"Tutorial") as TutorialScene!
+//            
+//            /* Ensure correct aspect mode */
+//            scene?.scaleMode = .aspectFill
+//            
+//            /* Restart game scene */
+//            skView?.presentScene(scene)
+//            self.gameState = .tutorial
+//
+//        }
         
         let swipeRight:UISwipeGestureRecognizer = UISwipeGestureRecognizer(target: self, action: #selector(swipedRight))
         swipeRight.direction = .right
@@ -153,15 +157,33 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
         view.addGestureRecognizer(swipeLeft)
         
         
-        let swipeUp:UISwipeGestureRecognizer = UISwipeGestureRecognizer(target: self, action: #selector(swipedUp))
-        swipeUp.direction = .up
-        view.addGestureRecognizer(swipeUp)
+//        let swipeUp:UISwipeGestureRecognizer = UISwipeGestureRecognizer(target: self, action: #selector(swipedUp))
+//        swipeUp.direction = .up
+//        view.addGestureRecognizer(swipeUp)
         
         
         let swipeDown:UISwipeGestureRecognizer = UISwipeGestureRecognizer(target: self, action: #selector(swipedDown))
         swipeDown.direction = .down
         view.addGestureRecognizer(swipeDown)
         scoreLabel.text = "\(points)"
+    }
+    
+    func tapped(sender:UITapGestureRecognizer){
+        if gameState == .active  {
+            
+            let velocityY = hero.physicsBody?.velocity.dy ?? 0
+            
+            if jump == .jump || jump == .ground {
+                hero.physicsBody?.applyImpulse(CGVector(dx: 0, dy: 22 + abs(velocityY)))
+            }
+            
+            if jump == .ground {
+                jump = .jump
+            }
+            else {
+                jump = .doubleJump
+            }
+        }
     }
     
     func swipedRight(sender:UISwipeGestureRecognizer){
@@ -179,34 +201,31 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
         
     }
     
-    func swipedUp(sender:UISwipeGestureRecognizer){
-        //        print("swiped up")
-        if gameState == .active  {
-            
-            let velocityY = hero.physicsBody?.velocity.dy ?? 0
-            
-            if jump == .jump || jump == .ground {
-                hero.physicsBody?.applyImpulse(CGVector(dx: 0, dy: 20 + abs(velocityY)))
-            }
-            
-            if jump == .ground {
-                jump = .jump
-            }
-            else {
-                jump = .doubleJump
-            }
-        }
-    }
-    
+//    func swipedUp(sender:UISwipeGestureRecognizer){
+//        //        print("swiped up")
+//        if gameState == .active  {
+//            
+//            let velocityY = hero.physicsBody?.velocity.dy ?? 0
+//            
+//            if jump == .jump || jump == .ground {
+//                hero.physicsBody?.applyImpulse(CGVector(dx: 0, dy: 20 + abs(velocityY)))
+//            }
+//            
+//            if jump == .ground {
+//                jump = .jump
+//            }
+//            else {
+//                jump = .doubleJump
+//            }
+//        }
+//    }
+//    
     func swipedDown(sender:UISwipeGestureRecognizer){
         //        print("swiped down")
     }
     
     
     override func update(_ currentTime: TimeInterval) {
-        if gameState == .gameOver {
-            return
-        }
         
         if gameState == .menu {
             let scrollRight = SKAction(named: "scrollRight")
@@ -214,9 +233,9 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
             let tutorialButtonMove = SKAction(named: "tutorialButtonMove")
             title.run(scrollUp!)
             self.playButton.state = .MSButtonNodeStateActive
-            playButton.run(scrollRight!)
-            self.tutorialButton.state = .MSButtonNodeStateActive
-            tutorialButton.run(tutorialButtonMove!)
+            //playButton.run(scrollRight!)
+//            self.tutorialButton.state = .MSButtonNodeStateActive
+//            tutorialButton.run(tutorialButtonMove!)
         }
         else{
             title.alpha = 0
@@ -224,14 +243,14 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
         }
         if gameState == .active {
             hero.position.x += moveDirection
-            self.resumeButton.state = .MSButtonNodeStateHidden
+            self.resumeButton.isHidden = true
         }
         
         /* Grab current velocity */
         let velocityY = hero.physicsBody?.velocity.dy ?? 0
         
         
-        /* Check and cap vertical velocity */
+//         Check and cap vertical velocity 
         if velocityY > 500 {
             hero.physicsBody?.velocity.dy = 500
         }
@@ -266,12 +285,14 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
         
         
         if gameState == .pause || gameState == .gameOver {
-            self.pauseButton.state = .MSButtonNodeStateHidden
+            //self.pauseButton.state = .MSButtonNodeStateHidden
         }
-        // print(gameState)
     }
     
-    
+    func startGame() {
+        view!.addGestureRecognizer(self.tap)
+        print("added tap")
+    }
     
     func updateObstacles() {
         if gameState == .active {
@@ -333,12 +354,7 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
 //        let nodeB = contactB.node as! SKSpriteNode
         /* Check if either physics bodies was lava */
         if (contactA.categoryBitMask == 4 && contactB.categoryBitMask == 1) || (contactB.categoryBitMask == 4 && contactA.categoryBitMask == 1) {
-            gameState = .gameOver
-            UserDefaults.standard.setValue(hs, forKey: "hs")
-            buttonRestart.state = .MSButtonNodeStateActive
-            resumeButton.state = .MSButtonNodeStateHidden
-            pauseButton.state = .MSButtonNodeStateHidden
-            gameState = .gameOver
+            runGameOver()
 
         }
         if contactA.categoryBitMask == 8 || contactB.categoryBitMask == 8 {
@@ -346,15 +362,23 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
         }
 
         if (contactA.categoryBitMask == 16 && contactB.categoryBitMask == 1) || (contactB.categoryBitMask == 16 && contactA.categoryBitMask == 1) {
-            gameState = .gameOver
-            UserDefaults.standard.setValue(hs, forKey: "hs")
-            buttonRestart.state = .MSButtonNodeStateActive
-            resumeButton.state = .MSButtonNodeStateHidden
-            pauseButton.state = .MSButtonNodeStateHidden
-            gameState = .gameOver
+          runGameOver()
         }
     }
     
+    func runGameOver() {
+        gameState = .gameOver
+        if view?.gestureRecognizers! != nil {
+            view?.removeGestureRecognizer(self.tap)
+            print("removed tapped")
+        }
+        tipText()
+        UserDefaults.standard.setValue(hs, forKey: "hs")
+        buttonRestart.state = .MSButtonNodeStateActive
+        resumeButton.isHidden = true
+        pauseButton.isHidden = true
+        //pauseButton.state = .MSButtonNodeStateHidden
+    }
     
     func fireBallSpawner() {
         if gameState == .active {
@@ -379,10 +403,52 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
             }
         }
     }
+    func tipText() {
+        tips.isHidden = false
+        if randomZeroToOne() < 0.25 {
+            tips.text = "Tip: Tap to jump."
+            return
+        }
+        else {
+            if randomZeroToOne() < 0.25 {
+                tips.text = "Tip: To double jump, double tap."
+                return
+            }
+            else{
+                if randomZeroToOne() < 0.25 {
+                    tips.text = "Tip: Change direction constantly."
+                    return
+                }
+                else {
+                    tips.text = "Tip: Swipe to change direction."
+                    return
+                }
+            }
+        }
+    }
     func animationTest() {
         if gameState != .active {
             hero.removeAllActions()
             fireball.removeAllActions()
+        }
+    }
+    override func touchesBegan(_ touches: Set<UITouch>, with event: UIEvent?) {
+        for t in touches {
+            if pauseButton.contains(t.location(in: self)) {
+                if self.gameState == .active {
+                    self.resumeButton.isHidden = false
+                }
+                if gameState == .active {
+                self.gameState = .pause
+                pauseButton.isHidden = true
+                }
+            }
+            if resumeButton.contains(t.location(in: self)) {
+                if self.gameState != .gameOver {
+                    self.gameState = .active
+                    self.pauseButton.isHidden = false
+                }
+            }
         }
     }
 }

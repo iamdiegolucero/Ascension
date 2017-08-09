@@ -10,11 +10,13 @@ import Foundation
 import SpriteKit
 import GameplayKit
 
-
+enum tutorialState {
+    case welcome, swipe, jump
+}
 
 class TutorialScene: SKScene, SKPhysicsContactDelegate {
     var hero: SKSpriteNode!
-    var moveDirection: CGFloat = 2.7
+    var moveDirection: CGFloat = 2.8
     var gameState: GameSceneState = .tutorial
     var jump: jumpTest = .ground
     
@@ -94,7 +96,14 @@ class TutorialScene: SKScene, SKPhysicsContactDelegate {
         if hero.position.x > 150 {
             hero.position.x = -150
         }
-        print(jump)
+        /* Grab current velocity */
+        let velocityY = hero.physicsBody?.velocity.dy ?? 0
+        
+        
+        /* Check and cap vertical velocity */
+        if velocityY > 500 {
+            hero.physicsBody?.velocity.dy = 500
+        }
     }
     
     func didBegin(_ contact: SKPhysicsContact) {
