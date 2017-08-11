@@ -228,9 +228,7 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
     override func update(_ currentTime: TimeInterval) {
         
         if gameState == .menu {
-            let scrollRight = SKAction(named: "scrollRight")
             let scrollUp = SKAction(named: "scrollUp")
-            let tutorialButtonMove = SKAction(named: "tutorialButtonMove")
             title.run(scrollUp!)
             self.playButton.state = .MSButtonNodeStateActive
             //playButton.run(scrollRight!)
@@ -238,7 +236,7 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
 //            tutorialButton.run(tutorialButtonMove!)
         }
         else{
-            title.alpha = 0
+            title.isHidden = true
             self.playButton.state = .MSButtonNodeStateHidden
         }
         if gameState == .active {
@@ -440,12 +438,16 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
                 }
                 if gameState == .active {
                 self.gameState = .pause
+                hero.physicsBody?.affectedByGravity = false
+                hero.physicsBody?.isDynamic = false
                 pauseButton.isHidden = true
                 }
             }
             if resumeButton.contains(t.location(in: self)) {
                 if self.gameState != .gameOver {
                     self.gameState = .active
+                    hero.physicsBody?.affectedByGravity = true
+                    hero.physicsBody?.isDynamic = true
                     self.pauseButton.isHidden = false
                 }
             }
